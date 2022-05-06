@@ -104,7 +104,25 @@ class GameScreen(val game: Game) : KtxScreen {
                     particleIter.remove()
                 }
             }
-            it.draw(activeWeapon.getTexture(), player.x - activeWeapon.getTexture().getWidth() / 2, player.y - activeWeapon.getTexture().getHeight() / 2, activeWeapon.getTexture().getWidth().toFloat() / 2, activeWeapon.getTexture().getHeight().toFloat() / 2, activeWeapon.getTexture().getWidth().toFloat(), activeWeapon.getTexture().getHeight().toFloat(), 1f, 1f, MathUtils.radiansToDegrees * MathUtils.atan2(touchPos.y - (player.y + player.radius / 2), touchPos.x - (player.x + player.radius / 2)) - 90, 0, 0, activeWeapon.getTexture().getWidth(), activeWeapon.getTexture().getHeight(), false, false) // don't know how but make this better
+            it.draw(
+                activeWeapon.getTexture(), 
+                player.x - activeWeapon.getTexture().getWidth() / 2, 
+                player.y - activeWeapon.getTexture().getHeight() / 2, 
+                activeWeapon.getTexture().getWidth().toFloat() / 2, 
+                activeWeapon.getTexture().getHeight().toFloat() / 2, 
+                activeWeapon.getTexture().getWidth().toFloat(), 
+                activeWeapon.getTexture().getHeight().toFloat(), 
+                1f, 
+                1f, 
+                MathUtils.radiansToDegrees * MathUtils.atan2(touchPos.y - (player.y + player.radius / 2), 
+                touchPos.x - (player.x + player.radius / 2)) - 90, 
+                0, 
+                0, 
+                activeWeapon.getTexture().getWidth(), 
+                activeWeapon.getTexture().getHeight(), 
+                false, 
+                false
+            ) // don't know how but make this better
         }
 
         // process user input
