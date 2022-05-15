@@ -42,10 +42,7 @@ class GameScreen(val game: Game) : KtxScreen {
     private val camera = OrthographicCamera().apply { setToOrtho(false, width, height) }
 
     //player info
-    private val player = Circle(width / 2f, height / 2f, 32f)
-    private val defaultMove = 200
-    private var speedMultiplier = 1
-    private var acceleration = 1f
+    private var player = Player(width, height)
 
     // create the touchPos to store mouse click position
     private val touchPos = Vector3()
@@ -69,11 +66,12 @@ class GameScreen(val game: Game) : KtxScreen {
     }
 
     private fun spawnBullet() {
-        bullets.add(activeWeapon.fire(Vector2(player.x, player.y), Vector2(touchPos.x, touchPos.y)))
+        bullets.add(activeWeapon.fire(Vector2(player.getX(), player.getY()), Vector2(touchPos.x, touchPos.y)))
         lastShootTime = TimeUtils.nanoTime()
     }
 
     override fun render(delta: Float) {
+
         // set background color
         ScreenUtils.clear(0.5f, 0.3f, 0.2f, 1f)
 
@@ -88,7 +86,7 @@ class GameScreen(val game: Game) : KtxScreen {
         game.batch.use(camera) {
             game.font.draw(it, "Enemies Killed: $enemiesKilled", 0f, height)
             game.font.draw(it, "Damage Taken: $damageTaken", 550f, height)
-            it.draw(ball, player.x - player.radius, player.y - player.radius)
+            it.draw(ball, player.getX() - player.getRadius(), player.getY() - player.getRadius())
 
             for (enemy in enemies) {
                 it.draw(red, enemy.x, enemy.y, enemy.width, enemy.height)
@@ -106,16 +104,16 @@ class GameScreen(val game: Game) : KtxScreen {
             }
             it.draw(
                 activeWeapon.getTexture(), 
-                player.x - activeWeapon.getTexture().getWidth() / 2, 
-                player.y - activeWeapon.getTexture().getHeight() / 2, 
+                player.getX() - activeWeapon.getTexture().getWidth() / 2, 
+                player.getY() - activeWeapon.getTexture().getHeight() / 2, 
                 activeWeapon.getTexture().getWidth().toFloat() / 2, 
                 activeWeapon.getTexture().getHeight().toFloat() / 2, 
                 activeWeapon.getTexture().getWidth().toFloat(), 
                 activeWeapon.getTexture().getHeight().toFloat(), 
                 1f, 
                 1f, 
-                MathUtils.radiansToDegrees * MathUtils.atan2(touchPos.y - (player.y + player.radius / 2), 
-                touchPos.x - (player.x + player.radius / 2)) - 90, 
+                MathUtils.radiansToDegrees * MathUtils.atan2(touchPos.y - (player.getY() + player.getRadius() / 2), 
+                touchPos.x - (player.getX() + player.getRadius() / 2)) - 90, 
                 0, 
                 0, 
                 activeWeapon.getTexture().getWidth(), 
@@ -126,6 +124,7 @@ class GameScreen(val game: Game) : KtxScreen {
         }
 
         // process user input
+        // This should not be here in the future. I made it bad like this just so it would run while refactoring
         if (Gdx.input.isButtonPressed(Buttons.LEFT)) {
             if (TimeUtils.nanoTime() - lastShootTime > 100_000_000L) {
                 spawnBullet()
@@ -141,23 +140,23 @@ class GameScreen(val game: Game) : KtxScreen {
         }
 
         if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
-            speedMultiplier = 3
+            player.setSpeedMultiplier(3)
         } else {
-            speedMultiplier = 1
+            player.setSpeedMultiplier(1)
         }
         if (Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A)) {
-            acceleration -= 5f * delta * speedMultiplier
+            player.setAcceleration(player.getAcceleration() - 5f * delta * player.getSpeedMultiplier())
         }
         else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)) {
-            acceleration += 5f * delta * speedMultiplier
+            player.setAcceleration(player.getAcceleration() + 5f * delta * player.getSpeedMultiplier())
         }
         //else {
-            acceleration *= (60f*0.95f) * delta
+            player.setAcceleration(player.getAcceleration() * (60f*0.95f) * delta) 
         //}
-        player.x += defaultMove * delta * acceleration
+        player.move(player.getDefaultMove() * delta * player.getAcceleration()) 
 
         // make sure the bucket stays within the screen bounds
-        player.x = MathUtils.clamp(player.x, player.radius, width - player.radius)
+        player.getHitBox().setX(MathUtils.clamp(player.getX(), player.getRadius(), width - player.getRadius()))
 
         // check if we need to create a new enemy
         if (TimeUtils.nanoTime() - lastSpawnTime > 1_000_000_000L) {
@@ -175,12 +174,11 @@ class GameScreen(val game: Game) : KtxScreen {
                 enemyIter.remove()
             } 
 
-            if (Intersector.overlaps(player, enemy)) {
+            if (Intersector.overlaps(player.getHitBox(), enemy)) {
                 enemyIter.remove()
                 damageTaken++
             }
         }
-
         // move the bullets, remove any that are beneath the bottom edge of the
         //    screen or that hit the bucket. 
         val bulletIter = bullets.iterator()
