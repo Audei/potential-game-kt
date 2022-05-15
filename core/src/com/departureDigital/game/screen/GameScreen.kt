@@ -18,6 +18,8 @@ import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.utils.Array
 import com.badlogic.gdx.utils.ScreenUtils
 import com.badlogic.gdx.utils.TimeUtils
+import com.departureDigital.game.assets.ImageAssets
+import com.departureDigital.game.assets.get
 import com.departureDigital.game.Game
 import com.departureDigital.game.objects.*
 import ktx.app.KtxScreen
@@ -26,9 +28,9 @@ import ktx.graphics.*
 class GameScreen(val game: Game) : KtxScreen {
 
     // Should have some sort of manager for this
-    private val red = Texture(Gdx.files.internal("red.png"))
-    private val gun1 = Texture(Gdx.files.internal("cannon.png"))
-    private val gun2 = Texture(Gdx.files.internal("gun2.png"))
+    private val red = game.assets[ImageAssets.enemy]
+    private val gun1 = game.assets[ImageAssets.gun1]
+    private val gun2 = game.assets[ImageAssets.gun2]
     private var activeWeapon = Weapon(gun1, 400f)
 
     private val ball = Texture( Pixmap(64, 64, Pixmap.Format.RGBA8888).apply {
@@ -54,7 +56,7 @@ class GameScreen(val game: Game) : KtxScreen {
     private var damageTaken = 0
 
     // Bullet info
-    private val bulletTexture = Texture(Gdx.files.internal("bullet2.png"))
+    private val bulletTexture = game.assets[ImageAssets.bullet]
     private val bullets = Array<Bullet>() // gdx, not Kotlin Array
     private var lastShootTime = 0L
     private val particleEffects = Array<BulletExplosion>() // gdx, not Kotlin Array
@@ -203,13 +205,5 @@ class GameScreen(val game: Game) : KtxScreen {
             }
             bullet.move(delta)
         }
-    }
-
-    override fun dispose() {
-        red.dispose()
-        ball.dispose()
-        gun1.dispose()
-        gun2.dispose()
-        bulletTexture.dispose()
     }
 }
