@@ -1,6 +1,7 @@
 package com.departureDigital.game;
 
 import com.badlogic.gdx.assets.AssetManager
+import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.g2d.Batch
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
@@ -17,15 +18,16 @@ class Game : KtxGame<KtxScreen>() {
     // use LibGDX's default Arial font
     val font by lazy { BitmapFont() }
     val assets = AssetManager()
-    // private val context = Context()
+    private val context = Context()
 
     override fun create() {
-        addScreen(MainMenuScreen(this))
-        // context.register {
-        //     bindSingleton<Batch>(SpriteBatch())
-        //     bindSingleton(BitMapFont())
-        //     bindSingleton(AssetManager())
-        // }
+        context.register {
+            bindSingleton<Batch>(SpriteBatch())
+            bindSingleton(BitmapFont())
+            bindSingleton(AssetManager())
+            bindSingleton(OrthographicCamera().apply { setToOrtho(false, 800f, 480f) })
+            addScreen(MainMenuScreen(this@Game, inject(), inject(), inject(), inject()))
+        }
         setScreen<MainMenuScreen>()
         super.create()
     }

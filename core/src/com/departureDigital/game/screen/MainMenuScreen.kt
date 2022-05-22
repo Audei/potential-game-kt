@@ -3,36 +3,39 @@ package com.departureDigital.game.screen
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.graphics.OrthographicCamera
+import com.badlogic.gdx.graphics.g2d.Batch
+import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.departureDigital.game.Game
 import com.departureDigital.game.assets.ImageAssets
 import com.departureDigital.game.assets.load
 import ktx.app.KtxScreen
 
-class MainMenuScreen(val game: Game) : KtxScreen {
-    private val camera = OrthographicCamera().apply { setToOrtho(false, 800f, 480f) }
+class MainMenuScreen(private val game: Game,
+                     private val batch: Batch,
+                     private val font: BitmapFont,
+                     private val assets: AssetManager,
+                     private val camera: OrthographicCamera) : KtxScreen {
 
     override fun show() {
-        ImageAssets.values().forEach { game.assets.load(it) }
+        ImageAssets.values().forEach { assets.load(it) }
     }
 
     override fun render(delta: Float) {
         // continue loading our assets
-        game.assets.update()
+        assets.update()
 
         camera.update()
-        game.batch.projectionMatrix = camera.combined
-
-        game.batch.begin()
-        game.font.draw(game.batch, "Welcome to a new game!!! ", 350f, 430f)
-
-        if (game.assets.isFinished) {
-            game.font.draw(game.batch, "Tap anywhere to begin!", 100f, 100f)
+        batch.projectionMatrix = camera.combined
+        batch.begin()
+        font.draw(batch, "Welcome to a new game!!! ", 350f, 430f)
+        if (assets.isFinished) {
+            font.draw(batch, "Tap anywhere to begin!", 100f, 100f)
         } else {
-            game.font.draw(game.batch, "Loading assets...", 100f, 100f)
+            font.draw(batch, "Loading assets...", 100f, 100f)
         }
-        game.batch.end()
-        if (Gdx.input.isTouched && game.assets.isFinished) {
-            game.addScreen(GameScreen(game))
+        batch.end()
+        if (Gdx.input.isTouched && assets.isFinished) {
+            game.addScreen(GameScreen(batch, font, assets, camera))
             game.setScreen<GameScreen>()
             game.removeScreen<MainMenuScreen>()
             dispose()

@@ -3,8 +3,11 @@ package com.departureDigital.game.screen
 // clean up imports maybe
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
+import com.badlogic.gdx.assets.AssetManager
 import com.badlogic.gdx.Input.Buttons
 import com.badlogic.gdx.graphics.OrthographicCamera
+import com.badlogic.gdx.graphics.g2d.Batch
+import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.g2d.ParticleEffect;
 import com.badlogic.gdx.graphics.Pixmap
@@ -25,12 +28,14 @@ import com.departureDigital.game.objects.*
 import ktx.app.KtxScreen
 import ktx.graphics.*
 
-class GameScreen(val game: Game) : KtxScreen {
+class GameScreen(private val batch: Batch,
+                 private val font: BitmapFont,
+                 assets: AssetManager,
+                 private val camera: OrthographicCamera) : KtxScreen {
 
-    // Should have some sort of manager for this
-    private val red = game.assets[ImageAssets.enemy]
-    private val gun1 = game.assets[ImageAssets.gun1]
-    private val gun2 = game.assets[ImageAssets.gun2]
+    private val red = assets[ImageAssets.enemy]
+    private val gun1 = assets[ImageAssets.gun1]
+    private val gun2 = assets[ImageAssets.gun2]
     private var activeWeapon = Weapon(gun1, 400f)
 
     private val ball = Texture( Pixmap(64, 64, Pixmap.Format.RGBA8888).apply {
@@ -39,9 +44,9 @@ class GameScreen(val game: Game) : KtxScreen {
         }
     )
 
+    // probably should be somewhere else
     private val width = 800f
     private val height = 480f
-    private val camera = OrthographicCamera().apply { setToOrtho(false, width, height) }
 
     //player info
     private var player = Player(width, height)
@@ -56,7 +61,7 @@ class GameScreen(val game: Game) : KtxScreen {
     private var damageTaken = 0
 
     // Bullet info
-    private val bulletTexture = game.assets[ImageAssets.bullet]
+    private val bulletTexture = assets[ImageAssets.bullet]
     private val bullets = Array<Bullet>() // gdx, not Kotlin Array
     private var lastShootTime = 0L
     private val particleEffects = Array<BulletExplosion>() // gdx, not Kotlin Array
@@ -85,9 +90,9 @@ class GameScreen(val game: Game) : KtxScreen {
         camera.unproject(touchPos)
 
         // begin a new batch and draw 
-        game.batch.use(camera) {
-            game.font.draw(it, "Enemies Killed: $enemiesKilled", 0f, height)
-            game.font.draw(it, "Damage Taken: $damageTaken", 550f, height)
+        batch.use(camera) {
+            font.draw(it, "Enemies Killed: $enemiesKilled", 0f, height)
+            font.draw(it, "Damage Taken: $damageTaken", 550f, height)
             it.draw(ball, player.getX() - player.getRadius(), player.getY() - player.getRadius())
 
             for (enemy in enemies) {
@@ -99,7 +104,7 @@ class GameScreen(val game: Game) : KtxScreen {
             val particleIter = particleEffects.iterator()
             while(particleIter.hasNext()) {
                 val particleEffect = particleIter.next()
-                particleEffect.draw(game.batch, delta)
+                particleEffect.draw(batch, delta)
                 if(particleEffect.isComplete()) {
                     particleIter.remove()
                 }
