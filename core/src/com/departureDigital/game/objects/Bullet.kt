@@ -5,26 +5,15 @@ import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.utils.Pool.Poolable;
 
-class Bullet(playerInfo: Vector2, bulletSpeed: Float, xPos: Float, yPos: Float, width:Float, height: Float, touchPos: Vector2) : Rectangle(xPos, yPos, width, height){
-    private val speed: Float 
-    private val target: Vector2
-    private val player: Vector2
-    private val movement: Vector2
-    private val origin: Vector2
+class Bullet(private val player: Vector2, 
+             private val speed: Float, 
+             private val xPos: Float, 
+             private val yPos: Float, 
+             private val width:Float, 
+             private val height: Float, 
+             private val target: Vector2) : Rectangle(xPos, yPos, width, height){
 
-    init {
-        speed = bulletSpeed
-        target = touchPos
-        player = playerInfo
-        movement = calculateMovement()
-        origin = Vector2(xPos, yPos)
-    }
-
-	// override fun reset() {
-        // x = origin.x
-        // y = origin.y
-	// 	System.out.println("Bullet is reset");
-	// }
+    private val movement = calculateMovement()
 
     private fun calculateMovement():Vector2 {
         val angle = target.sub(player).angleRad()
