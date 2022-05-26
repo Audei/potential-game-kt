@@ -157,9 +157,7 @@ class GameScreen(private val batch: Batch,
         else if (Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)) {
             player.setAcceleration(player.getAcceleration() + 5f * delta * player.getSpeedMultiplier())
         }
-        //else {
-            player.setAcceleration(player.getAcceleration() * (60f*0.95f) * delta) 
-        //}
+        player.setAcceleration(player.getAcceleration() * (60f*0.95f) * delta) 
         player.move(player.getDefaultMove() * delta * player.getAcceleration()) 
 
         // make sure the bucket stays within the screen bounds
@@ -170,9 +168,7 @@ class GameScreen(private val batch: Batch,
             spawnEnemy()
         }
 
-        // move the enemies, remove any that are beneath the bottom edge of the
-        //    screen or that hit the bucket.  In the latter case, play back a sound
-        //    effect also
+        // move the enemies, remove any that hit the edges or that hit the player
         var enemyIter = enemies.iterator()
         while (enemyIter.hasNext()) {
             val enemy = enemyIter.next()
@@ -186,24 +182,26 @@ class GameScreen(private val batch: Batch,
                 damageTaken++
             }
         }
-        // move the bullets, remove any that are beneath the bottom edge of the
-        //    screen or that hit the bucket. 
+
+        // move the bullets, remove any that hit the edges or that hit the player
         val bulletIter = bullets.iterator()
         while (bulletIter.hasNext()) {
             val bullet = bulletIter.next()
 
             if (bullet.getY() + bulletTexture.getHeight() < 0 || bullet.getY() - bulletTexture.getHeight() > height || bullet.getX() + bulletTexture.getWidth() < 0 || bullet.getX() - bulletTexture.getWidth() > width) { 
+                activeWeapon.free(bullet)
                 bulletIter.remove() 
+                
                 continue
             }
 
             val enemyIter = enemies.iterator()
             while(enemyIter.hasNext()) {
                 val enemy = enemyIter.next()
-                // gets index ouf of bounds for -1 sometimes
                 if (Intersector.overlaps(bullet, enemy)) {
                     particleEffects.add(BulletExplosion(enemy.getX(), enemy.getY()))
                     enemyIter.remove()
+                    activeWeapon.free(bullet)
                     bulletIter.remove()
                     enemiesKilled++
                 }
